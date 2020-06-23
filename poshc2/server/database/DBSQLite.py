@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 from poshc2.Colours import Colours
 from poshc2.server.Config import Database
+from poshc2.server.database.Model import C2, Implant
 
 
 conn = None
@@ -20,6 +21,7 @@ def initializedb():
     create_implants = """CREATE TABLE IF NOT EXISTS Implants (
         ImplantID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
         RandomURI VARCHAR(20),
+        URLID INTEGER,
         User TEXT,
         Hostname TEXT,
         IpAddress TEXT,
@@ -27,14 +29,14 @@ def initializedb():
         FirstSeen TEXT,
         LastSeen TEXT,
         PID TEXT,
-        Proxy TEXT,
         Arch TEXT,
         Domain TEXT,
         Alive TEXT,
         Sleep TEXT,
         ModsLoaded TEXT,
         Pivot TEXT,
-        Label TEXT);"""
+        Label TEXT,
+        FOREIGN KEY(URLID) REFERENCES URLs(URLID));"""
 
     create_autoruns = """CREATE TABLE AutoRuns (
         TaskID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
@@ -59,7 +61,7 @@ def initializedb():
 
     create_urls = """CREATE TABLE URLs (
         URLID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
-        RandomID TEXT,
+        Name TEXT,
         URL TEXT,
         HostHeader TEXT,
         ProxyURL TEXT,
@@ -110,12 +112,12 @@ def initializedb():
     c = conn.cursor()
 
     if conn is not None:
+        c.execute(create_urls)
         c.execute(create_implants)
         c.execute(create_autoruns)
         c.execute(create_tasks)
         c.execute(create_newtasks)
         c.execute(create_creds)
-        c.execute(create_urls)
         c.execute(create_c2server)
         c.execute(create_history)
         c.execute(create_c2_messages)
@@ -134,20 +136,20 @@ def get_c2server_all():
     c = conn.cursor()
     c.execute("SELECT * FROM C2Server")
     result = c.fetchone()
-    if result:
-        return result
-    else:
-        return None
+    return C2(result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], result[9],
+    result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16], result[17],
+    result[18], result[19], result[20], result[21])
 
 
 def get_implants_all():
     c = conn.cursor()
     c.execute("SELECT * FROM Implants")
-    result = c.fetchall()
-    if result:
-        return result
-    else:
-        return None
+    results = c.fetchall()
+    implants = []
+    for result in results:
+        implants.append(Implant(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], 
+        result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16]))
+    return implants
 
 
 def get_newtasks_all():
@@ -160,10 +162,11 @@ def get_newtasks_all():
         return None
 
 
-def new_urldetails(RandomID, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry):
+def new_urldetails(Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry):
     c = conn.cursor()
-    c.execute("INSERT INTO URLs (RandomID, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry) VALUES (?, ?, ?, ?, ?, ?, ?)", (RandomID, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry))
+    c.execute("INSERT INTO URLs (Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry) VALUES (?, ?, ?, ?, ?, ?, ?)", (Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry))
     conn.commit()
+    return c.lastrowid
 
 
 def drop_newtasks():
@@ -224,11 +227,12 @@ def get_history():
 def get_implants():
     c = conn.cursor()
     c.execute("SELECT * FROM Implants WHERE Alive='Yes'")
-    result = c.fetchall()
-    if result:
-        return result
-    else:
-        return None
+    results = c.fetchall()
+    implants = []
+    for result in results:
+        implants.append(Implant(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], 
+        result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16]))
+    return implants
 
 
 def get_implanttype(randomuri):
@@ -246,17 +250,8 @@ def get_implantdetails(randomuri):
     c.execute("SELECT * FROM Implants WHERE RandomURI=?", (randomuri,))
     result = c.fetchone()
     if result:
-        return result
-    else:
-        return None
-
-
-def get_hostdetails(implant_id):
-    c = conn.cursor()
-    c.execute("SELECT * FROM Implants WHERE ImplantID=?", (implant_id,))
-    result = c.fetchone()
-    if result:
-        return result
+        return Implant(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], 
+        result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16])
     else:
         return None
 
@@ -363,9 +358,10 @@ def update_implant_lastseen(time, randomuri):
     except:
         pass
 
-def new_implant(RandomURI, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Proxy, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label):
+
+def new_implant(RandomURI, URLID, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label):
     c = conn.cursor()
-    c.execute("INSERT INTO Implants (RandomURI, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Proxy, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (RandomURI, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Proxy, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label))
+    c.execute("INSERT INTO Implants (RandomURI, URLID, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (RandomURI, URLID, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label))
     conn.commit()
     return c.lastrowid
 
@@ -373,7 +369,7 @@ def new_implant(RandomURI, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, 
 def insert_task(randomuri, command, user):
     now = datetime.now()
     sent_time = now.strftime("%d/%m/%Y %H:%M:%S")
-    implantId = get_implantbyrandomuri(randomuri)[0]
+    implantId = get_implantbyrandomuri(randomuri).ImplantID
     c = conn.cursor()
     if user is None:
         user = ""
@@ -415,7 +411,8 @@ def get_implantbyid(implantId):
     c.execute("SELECT * FROM Implants WHERE ImplantID=?", (implantId,))
     result = c.fetchone()
     if result:
-        return result
+        return Implant(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], 
+        result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16])
     else:
         return None
 
@@ -425,7 +422,8 @@ def get_implantbyrandomuri(RandomURI):
     c.execute("SELECT * FROM Implants WHERE RandomURI=?", (RandomURI,))
     result = c.fetchone()
     if result:
-        return result
+        return Implant(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], 
+        result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16])
     else:
         return None
 
@@ -563,6 +561,24 @@ def get_allurls():
         return None
 
 
+def get_url_by_id(id):
+    c = conn.cursor()
+    c.execute("SELECT * FROM URLs where URLID=?", (id,))
+    result = c.fetchone()
+    return result
+
+
+def get_default_url_id():
+    c = conn.cursor()
+    c.execute("SELECT * FROM URLs where Name='updated_host' ORDER BY rowid DESC LIMIT 1")
+    result = c.fetchone()
+    if result:
+        return result
+    else:
+        c.execute("SELECT * FROM URLs where Name='default' ORDER BY rowid DESC LIMIT 1")
+        return c.fetchone()
+
+
 def get_beaconurl():
     c = conn.cursor()
     c.execute("SELECT URLS FROM C2Server")
@@ -591,16 +607,6 @@ def get_newimplanturl():
     if result:
         url = result.split(",")
         return "/" + url[0].replace('"', '')
-    else:
-        return None
-
-
-def get_hostinfo(randomuri):
-    c = conn.cursor()
-    c.execute("SELECT * FROM Implants WHERE RandomURI=?", (randomuri,))
-    result = c.fetchall()
-    if result:
-        return result[0]
     else:
         return None
 
@@ -737,26 +743,6 @@ def get_c2_messages():
             conn.commit()
             messages.append(item[1])
         return messages
-    else:
-        return None
-
-
-def get_implants_all_db():
-    c = conn.cursor()
-    c.execute("SELECT * FROM Implants")
-    result = c.fetchall()
-    if result:
-        return result
-    else:
-        return None
-
-
-def get_htmlimplant(randomuri):
-    c = conn.cursor()
-    c.execute("SELECT * FROM Implants WHERE RandomURI=?", (randomuri,))
-    result = c.fetchone()
-    if result:
-        return result
     else:
         return None
 

