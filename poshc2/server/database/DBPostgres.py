@@ -61,7 +61,7 @@ def initializedb():
 
     create_urls = """CREATE TABLE URLs (
         URLID SERIAL NOT NULL PRIMARY KEY,
-        Name TEXT,
+        Name TEXT UNIQUE,
         URL TEXT,
         HostHeader TEXT,
         ProxyURL TEXT,
