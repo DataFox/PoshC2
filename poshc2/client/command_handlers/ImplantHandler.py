@@ -710,7 +710,7 @@ def do_createdaisypayload(user, command):
     urlId = new_urldetails(name, C2.PayloadCommsHost, C2.DomainFrontHeader, f"Daisy: {name}", daisyurl, daisyhostid, "")
     newPayload = Payloads(C2.KillDate, C2.EncKey, C2.Insecure, C2.UserAgent, C2.Referrer,
         "%s?d" % get_newimplanturl(), PayloadsDirectory, PowerShellProxyCommand=proxynone, URLID=urlId)
-    newPayload.PSDropper = (newPayload.PSDropper).replace("$pid;%s" % (daisyurl), "$pid;%s@%s" % (daisyhost[11], daisyhost[3]))
+    newPayload.PSDropper = (newPayload.PSDropper).replace("$pid;%s" % (daisyurl), "$pid;%s@%s" % (daisyhost.User, daisyhost.Domain))
     newPayload.CreateRaw(name)
     newPayload.CreateDroppers(name)
     newPayload.CreateDlls(name)
