@@ -432,6 +432,7 @@ def do_generate_reports(user, command):
     generate_table("C2Server")
     generate_table("Creds")
     generate_table("Implants")
+    generate_table("URLs")
     graphviz()
     input("Press Enter to continue...")
     clear()
