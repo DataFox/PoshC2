@@ -19,10 +19,10 @@ def database_connect():
 def initializedb():
     database_connect()
     create_implants = """CREATE TABLE IF NOT EXISTS Implants (
-        ImplantID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+        ImplantID SERIAL NOT NULL PRIMARY KEY,
         RandomURI VARCHAR(20),
         URLID INTEGER,
-        User TEXT,
+        "User" TEXT,
         Hostname TEXT,
         IpAddress TEXT,
         Key TEXT,
@@ -177,9 +177,9 @@ def get_newtasks_all():
 
 def new_urldetails(Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry):
     c = conn.cursor()
-    c.execute("INSERT INTO URLs (Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry) VALUES (%s, %s, %s, %s, %s, %s, %s)", (Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry))
+    c.execute("INSERT INTO URLs (Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING URLID", (Name, URL, HostHeader, ProxyURL, ProxyUsername, ProxyPassword, CredentialExpiry))
     conn.commit()
-    return c.lastrowid
+    return c.fetchone()[0]
 
 
 def drop_newtasks():
@@ -264,7 +264,7 @@ def get_implantdetails(randomuri):
     result = c.fetchone()
     if result:
         return Implant(result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7], result[8], 
-        result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16]))
+        result[9], result[10], result[11], result[12], result[13], result[14], result[15], result[16])
     else:
         return None
 
@@ -370,7 +370,7 @@ def update_implant_lastseen(time, randomuri):
 
 def new_implant(RandomURI, URLID, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label):
     c = conn.cursor()
-    c.execute("INSERT INTO Implants (RandomURI, URLID, \"User\", Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label) VALUES (%s, %s %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING ImplantID", (RandomURI, URLID, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label))
+    c.execute("INSERT INTO Implants (RandomURI, URLID, \"User\", Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING ImplantID", (RandomURI, URLID, User, Hostname, IpAddress, Key, FirstSeen, LastSeen, PID, Arch, Domain, Alive, Sleep, ModsLoaded, Pivot, Label))
     conn.commit()
     return c.fetchone()[0]
 
@@ -572,21 +572,21 @@ def get_allurls():
         return None
 
 
-def get_url_by_id(id):
+def get_url_by_id(urlid):
     c = conn.cursor()
-    c.execute("SELECT * FROM URLs where URLID=?", (id,))
+    c.execute("SELECT * FROM URLs where URLID=%s", (urlid,))
     result = c.fetchone()
     return result
 
 
 def get_default_url_id():
     c = conn.cursor()
-    c.execute("SELECT * FROM URLs where Name='updated_host' ORDER BY rowid DESC LIMIT 1")
+    c.execute("SELECT * FROM URLs where Name='updated_host' ORDER BY URLID DESC LIMIT 1")
     result = c.fetchone()
     if result:
         return result
     else:
-        c.execute("SELECT * FROM URLs where Name='default' ORDER BY rowid DESC LIMIT 1")
+        c.execute("SELECT * FROM URLs where Name='default' ORDER BY URLID DESC LIMIT 1")
         return c.fetchone()
 
 
